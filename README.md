@@ -8,6 +8,10 @@ The spell selector is activated by SHIFT+RIGHT CLICK on the token. This will onl
 
 ## Configuring Magic Actions
 
+### Save
+
+This is the most important button. Clicking _Save_ will store your entries. Closing the _Configure Spell Selector_ dialog will without saving will lose any changes.
+
 Magic Actions are add via Configure Settings.
 
 **Add Magic Action:**
