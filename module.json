@@ -29,8 +29,8 @@
   },
  "esmodules": ["scripts/lgs-genesys-spell-selector.js"],
   "languages": [],
-  "manifest": "https://github.com/Lyinggod/lgs-genesys-spell-selector/releases/download/v0.1.0/module.json",
-  "download": "https://github.com/Lyinggod/lgs-genesys-spell-selector/releases/download/v0.1.0/lgs-genesys-spell-selector.zip",
-  "url": "https://github.com/Lyinggod/lgs-genesys-spell-selector",
-  "readme": "https://github.com/Lyinggod/lgs-genesys-spell-selector/blob/main/README.md"
+  "manifest": "https://github.com/Lyinggod/lyinggods-genesys-spell-selector/releases/download/v0.1.0/module.json",
+  "download": "https://github.com/Lyinggod/lyinggods-genesys-spell-selector/releases/download/v0.1.0/lgs-genesys-spell-selector.zip",
+  "url": "https://github.com/Lyinggod/lyinggods-genesys-spell-selector",
+  "readme": "https://github.com/Lyinggod/lyinggods-genesys-spell-selector/blob/main/README.md"
 }
