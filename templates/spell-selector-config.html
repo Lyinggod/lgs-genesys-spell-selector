@@ -1,0 +1,187 @@
+<style>
+  .rounded-tab {
+    --r: .8em; /* control the curvature */
+    border-inline: var(--r) solid #0000;
+    border-radius: calc(2*var(--r)) calc(2*var(--r)) 0 0/var(--r);
+    mask: radial-gradient(var(--r) at var(--r) 0,#0000 98%,#000 101%) calc(-1*var(--r)) 100%/100% var(--r) repeat-x,
+          conic-gradient(#000 0 0) padding-box;
+    flex: 1;
+    margin-left: -22px!important;
+  }
+  .rounded-tab.left {
+    border-left-width: 0;
+    border-top-left-radius: var(--r);
+  }
+  .rounded-tab.right {
+    border-right-width: 0;
+    border-top-right-radius: var(--r);
+  }
+  .tabs > [data-tab].active {
+    color: white;
+    text-shadow: none;
+    background-color: rgba(176, 129, 0, 0.5);
+  }
+  .tabs {
+    margin-bottom: -9px;
+    display: flex;
+    gap: 5px;
+	padding-left:13px;
+  }
+  button.spellTab {
+    background-color: rgba(176, 129, 0, 0.3);
+  }
+  #spellSelectorHR {
+    border: none;
+    height: 1px;
+    color: #333;
+    background-color: #333;
+  }
+</style>
+
+<form id="spell-selector-config-form">
+  <div class="tabs">
+    {{#if actions.length}}
+      {{#each actions}}
+        <button class="spellTab rounded-tab" data-tab="{{@index}}">
+          {{#if this.name}}{{this.name}}{{else}}Action {{@index}}{{/if}}
+        </button>
+      {{/each}}
+    {{else}}
+      <button class="spellTab rounded-tab" data-tab="0">Action 0</button>
+    {{/if}}
+  </div>
+  <hr id="spellSelectorHR">
+  <div style="display: flex; width: 100%; justify-content: space-between; align-items: center;">
+    <div style="width: 232px;">
+      <button type="button" id="addMagicAction" style="width:122px;  background-color: lightblue;">Add Magic Action</button>
+      <button type="submit" id="saveMagicActions" style="width:100px; background-color: lightblue;">Save</button>
+    </div>
+    <div style="width: 248px; text-align: center; margin: 0 auto;">
+      <button type="button" style="width:100px; background-color: lightgreen;" class="add-effect" data-action-index="{{@index}}">Add Effects</button>
+      <button type="button" style="width:136px; background-color: lightgreen;" class="delete-magic-action" data-action-index="{{@index}}">Delete Magic Action</button>
+    </div>
+    <div style="width: 218px; text-align: right;">
+      <button type="button" id="exportActions" style="width:104px; background-color: lightcoral;">Export Actions</button>
+      <button type="button" id="importActions" style="width:106px; background-color: lightcoral;">Import Actions</button>
+    </div>
+  </div>
+  <hr>
+  <b>Usage:</b> In both Descriptions enter #k to show ranks in magic knowledge skill, #cr? where ? is crit value, #dx? where ? is the damage multiplier. <b>Note:</b> Changes do not take effect until the <b>save</b> button is clicked.
+  <div class="content" style="height:723px; overflow-y:auto;">
+    {{#if actions.length}}
+      {{#each actions}}
+        <div class="tab-content" data-tab="{{@index}}" style="{{#if @first}}display:block;{{else}}display:none;{{/if}}">
+          <p>
+                       <label><b>Name:</b> <input type="text" name="action-{{@index}}-name" value="{{this.name}}" style="width:150px"></label>
+ <label><b>Difficulty:</b> 
+              <select name="action-{{@index}}-difficulty">
+                {{#each (range 1 6)}}
+                  <option value="{{this}}" {{#ifEquals this ../this.difficulty}}selected{{/ifEquals}}>{{this}}</option>
+                {{/each}}
+              </select>
+            </label>
+            <label><b>Causes Wounds</b> <input type="checkbox" id="attackSpellCheckbox" name="action-{{@index}}-damage" {{#if this.damage}}checked{{/if}}></label>
+            <label><b>Range:</b> <input type="text" style="width:100px" name="action-{{@index}}-range" value="{{this.range}}"></label>
+            <label><b>Concentration:</b> <input type="text"  style="width:40px" name="action-{{@index}}-concentration" value="{{this.concentration}}"></label>
+          </p>
+          <p>
+            <label><b>Skills (CSV):</b> <input type="text" style="width:696px" name="action-{{@index}}-skills" value="{{this.skills}}"></label>
+          </p>
+          <p>
+            <label><b>Description:</b> HTML may be used. Us <span style="color: darkred;">\n</span> for line breaks. Dont wrap text in &lt;p&gt;&lt;/p&gt;.<br>
+              <textarea name="action-{{@index}}-description" style="width:99%">{{this.description}}</textarea>
+            </label>
+          </p>
+          <hr>
+          <h4>Effects</h4>
+          <table border="1" style="width:99.5%;">
+            <tbody>
+              {{#each this.effects}}
+                <tr>
+                  <td style="vertical-align: top;">
+                    <div style="padding-top:5px">
+                      <strong>Setting Name:</strong>
+                      <input type="text"  style="width:200px; padding-right:10px" name="action-{{@../index}}-effect-{{@index}}-settingName" value="{{this.settingName}}">
+                      <strong>Effect Name:</strong>
+                      <input type="text" style="width:200px" name="action-{{@../index}}-effect-{{@index}}-effectName" value="{{this.effectName}}">
+                    </div>
+                    <div style="padding-top:10px;">
+                      <strong>Mod:</strong>
+                      <select style=" padding-right:10px;" name="action-{{@../index}}-effect-{{@index}}-mod">
+                        {{#each (range 1 6)}}
+                          <option value="{{this}}" {{#ifEquals this ../this.mod}}selected{{/ifEquals}}>{{this}}</option>
+                        {{/each}}
+                      </select>
+                      <strong>Repeatable:</strong>
+                      <select style="padding-right:10px;" name="action-{{@../index}}-effect-{{@index}}-repeatable">
+                        {{#each (range 1 6)}}
+                          <option value="{{this}}" {{#ifEquals this ../this.repeatable}}selected{{/ifEquals}}>{{this}}</option>
+                        {{/each}}
+                      </select>
+                      <strong>Skill:</strong>
+                      <input type="text" style="width: 100px" name="action-{{@../index}}-effect-{{@index}}-skill" value="{{this.skill}}">
+                    </div>
+                    <div style="display:flex; padding-top:10px;">
+                      <div>
+                        <strong>Full Description:</strong> (For Selector)
+                        <textarea rows="4" wrap="hard" type="text" name="action-{{@../index}}-effect-{{@index}}-fullDescription">{{this.fullDescription}}</textarea>
+                      </div>
+                      <div style="padding-left:10px">
+                        <strong>Short Description:</strong> (For Chat output)
+                        <textarea rows="2" wrap="hard" name="action-{{@../index}}-effect-{{@index}}-effects">{{this.effects}}</textarea>
+                      </div>
+                    </div>
+                  </td>
+                  <td style="vertical-align: top; text-align: center;">
+                    <button type="button" class="delete-effect" data-action-index="{{@../index}}" data-effect-index="{{@index}}" style="background: none; border: none;">
+                      <i class="fas fa-trash"></i>
+                    </button>
+                  </td>
+                </tr>
+              {{/each}}
+            </tbody>
+          </table>
+        </div>
+      {{/each}}
+    {{else}}
+      <div class="tab-content" data-tab="0" style="display:block;">
+        <h3>Magic Action 0</h3>
+        <p>
+          <label>Difficulty: 
+            <select name="action-0-difficulty">
+              {{#each (range 1 6)}}
+                <option value="{{this}}">{{this}}</option>
+              {{/each}}
+            </select>
+          </label>
+          <label>Name: <input type="text" name="action-0-name" value=""></label>
+        </p>
+        <p>
+          <label><input type="checkbox" name="action-0-damage"> Damage</label>
+        </p>
+        <p>
+          <label>Skills (CSV): <input type="text" name="action-0-skills" value=""></label>
+        </p>
+        <p>
+          <label>Range: <input type="text" name="action-0-range" value=""></label>
+        </p>
+        <p>
+          <label>Concentration: <input type="text" name="action-0-concentration" value=""></label>
+        </p>
+        <p>
+          <label>Description:<br>
+            <textarea name="action-0-description"></textarea>
+          </label>
+        </p>
+        <hr>
+        <h4>Effects</h4>
+        <table border="1" style="width:100%;">
+          <tbody></tbody>
+        </table>
+        <button type="button" class="add-effect" data-action-index="0">Add Effects</button>
+        <br>
+        <button type="button" class="delete-magic-action" data-action-index="0">Delete Magic Action</button>
+      </div>
+    {{/if}}
+  </div>
+</form>
