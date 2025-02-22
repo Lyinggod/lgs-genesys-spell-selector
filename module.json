@@ -1,9 +1,8 @@
 {
   "id": "lgs-genesys-spell-selector",
-  "name": "Lyinggods Genesys Spell Selector",
   "title": "Lyinggods Genesys Spell Selector",
   "description": "A module for Genesys to build spells on the fly using the Genesys core spell rules.",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "authors": [
     {
       "name": "Lyinggod",
@@ -29,8 +28,8 @@
   },
  "esmodules": ["scripts/lgs-genesys-spell-selector.js"],
   "languages": [],
-  "manifest": "https://github.com/Lyinggod/lgs-genesys-spell-selector/releases/download/v0.1.0/module.json",
-  "download": "https://github.com/Lyinggod/lgs-genesys-spell-selector/releases/download/v0.1.0/lgs-genesys-spell-selector.zip",
+  "manifest": "https://github.com/Lyinggod/lgs-genesys-spell-selector/releases/download/v0.2.0/module.json",
+  "download": "https://github.com/Lyinggod/lgs-genesys-spell-selector/releases/download/v0.2.0/lgs-genesys-spell-selector.zip",
   "url": "https://github.com/Lyinggod/lgs-genesys-spell-selector",
   "readme": "https://github.com/Lyinggod/lgs-genesys-spell-selector/blob/main/README.md"
 }

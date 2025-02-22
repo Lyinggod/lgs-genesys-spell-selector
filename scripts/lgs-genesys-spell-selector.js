@@ -331,19 +331,18 @@ class SpellSelectorConfig extends FormApplication {
 		<tr>
 		  <td>
 			<div>
-			  <b>Setting Name:</b> <input style="width:200px; padding-right:10px" type="text" name="action-${actionIndex}-effect-${newRowIndex}-settingName" value="">
-			  <b>Effect Name:</b> <input style="width:200px; padding-right:10px" type="text" name="action-${actionIndex}-effect-${newRowIndex}-effectName" value="">
-			</div>
-			<div>
-			  <b>Mod:</b>
+			  <!-- <b>Setting Name:</b> <input style="width:200px; padding-right:10px" type="text" name="action-${actionIndex}-effect-${newRowIndex}-settingName" value=""> -->
+			 <strong title="Name of Effect">Name:</strong> <input style="width:200px; padding-right:10px" type="text" name="action-${actionIndex}-effect-${newRowIndex}-effectName" value="">			
+			  <b>+${replaceSpellSymbols("[di]")}</b>
 			  <select style="padding-right:10px" name="action-${actionIndex}-effect-${newRowIndex}-mod">
+				<option value="0">0</option>
 				<option value="1">1</option>
 				<option value="2">2</option>
 				<option value="3">3</option>
 				<option value="4">4</option>
 				<option value="5">5</option>
 			  </select>
-			  <b>Repeatable:</b>
+			  <strong title="# of allowed levels">Levels:</strong>
 			  <select style="padding-right:10px" name="action-${actionIndex}-effect-${newRowIndex}-repeatable">
 				<option value="1">1</option>
 				<option value="2">2</option>
@@ -351,7 +350,7 @@ class SpellSelectorConfig extends FormApplication {
 				<option value="4">4</option>
 				<option value="5">5</option>
 			  </select>
-			  <b>Skill:</b> <input style="width:100px; padding-right:10px" type="text" name="action-${actionIndex}-effect-${newRowIndex}-skill" value="">
+			   <strong  title="Exact name of skill from sheet">Skill:</strong> <input style="width:100px; padding-right:10px" type="text" name="action-${actionIndex}-effect-${newRowIndex}-skill" value="">
 			</div>
 			<div style="display:flex">
 			  <div style="width:50%; padding-right:10px;">
@@ -507,7 +506,6 @@ async _onAddMagicAction() {
 }
 
 	/** @override */
-/** Modified _updateObject method in SpellSelectorConfig **/
 	async _updateObject(event, formData) {
 	  // This method parses the flat formData object into a nested structure.
 	  let actions = [];
@@ -545,7 +543,16 @@ async _onAddMagicAction() {
 	  
 	  await game.settings.set("lgs-genesys-spell-selector", "spellSelectorData", actions);
 	  ui.notifications.info("Spell Selector configuration saved.");
+	  // Note: We intentionally do NOT close the dialog so that it remains open.
 	}
+	
+	/** Override _onSubmit so that the dialog does not close after saving **/
+async _onSubmit(event) {
+  event.preventDefault();
+  const formData = this._getSubmitData();
+  await this._updateObject(event, formData);
+  // Do not call this.close(), leaving the dialog open.
+}
 
 }
 
@@ -599,14 +606,20 @@ Hooks.on("preCreateChatMessage", async (chatMessage, options, userId) => {
     let flavorArray = msg.data.addMsg;
     let newFlavor = flavorArray[0];
     let crit = flavorArray[3] > 0 ? flavorArray[3] : `<span class="dietype genesys triumph">t</span>`;
-    let damageMult = parseInt(flavorArray[1]) 
+    let damageMult = parseInt(flavorArray[2]) 
     let isAttackSpell = flavorArray[4];
+	let stat = flavorArray[1];
+	console.info("stat",stat)
 	let spellText = flavorArray[5]
+	console.info("damageMult",damageMult)
+	
+	if (spellText.length > 0) spellText = spellText + `<hr id="spellTextHR">`;
 	// Process the talent UUIDs and create links
 	let selectedTalentsWithScaling = JSON.parse(flavorArray[6]);
 
 	let talentList = "";
 	let strainTotal = 0;
+	let woundTotal = 0;
 	if (selectedTalentsWithScaling.length > 0) {
 		let talentsArray = await Promise.all(selectedTalentsWithScaling.map(ts => fromUuid(ts.uuid)));
 		let talentLinks = talentsArray.map((talent, index) => {
@@ -619,43 +632,49 @@ Hooks.on("preCreateChatMessage", async (chatMessage, options, userId) => {
 			if (scalingNumber !== '') {
 				talentName += ' ' + scalingNumber;
 			}
-			talentName = talentName +" (s:"+countTalentStrain(talent.system.description,strainMult)+")"
-			strainTotal += countTalentStrain(talent.system.description,strainMult)
+			let suffer = countTalentStrain(talent.system.description,strainMult);
+			talentName = talentName +suffer[0]; // strain and wounds from talent, if any x ranks
+			strainTotal += suffer[1]; // strain from select ranks * defined strain
+			woundTotal += suffer[2]; // wounds from talents
 			return `<a class="" draggable="true" data-link="" data-uuid="${itemUuid}" data-id="${fullItem.id}" data-type="Item" data-tooltip="" data-scope="">${talentName}</a>`;
 		}).join(", ");
 		talentList = "<b>Applied Talents</b>: " + talentLinks;
-		talentList = spellText > "" ? talentList+"*<br>" : talentList //+"<hr>";
+		talentList = spellText > "" ? talentList : talentList //+"<hr>";
 	}
-
-    let damage = flavorArray[2]
-
+//+`<hr id="talentListHR">`
+    let damage = stat * damageMult;
+	console.info("damage",stat,damageMult,stat*damageMult)
+    let damageHR = damage > 0 ? `<hr id="damageHR">` : "";
     let hit = 0;
     let spellDesc = `<span style="color: #000475;">${spellText}</span>`;
     let hitmsg = `${spellDesc}<br>`;
-    let genesysStrainOutputx = `<b>Strain Cost:</b> ${strainTotal+2}`;
+	let woundsTaken = woundTotal > 0 ? `&nbsp;&nbsp;&nbsp;<b>Wounds Suffered:</b> ${woundTotal}` : "";
+    let genesysStrainOutputx = `<b>Strain Cost:</b> ${strainTotal+2}${woundsTaken}`;
     if (msg.ffg.success > 0) hit = msg.ffg.success;
     if (hit > 0 && isAttackSpell) {
         hitmsg = `
-        ${spellDesc}<div style="margin-bottom:9px;"><span style="-webkit-text-stroke: .1px black; font-size:14px; padding-left:5px; padding-right:10px; padding-bottom:10px;" class="item-damage">Damage:</span><span><input style="width:70%; font-size:14px;" class="damage-value" type="text" value="${hit} + ${damage*damageMult} = ${damage*damageMult+hit}" disabled=""></span></div>
+        ${spellDesc}<div style="margin-bottom:9px;"><span style="-webkit-text-stroke: .1px black; font-size:14px; padding-left:5px; padding-right:10px; padding-bottom:10px;" class="item-damage">Damage:</span><span><input style="width:70%; font-size:14px;" class="damage-value" type="text" value="${hit} + ${stat*damageMult} = ${stat*damageMult+hit}" disabled=""></span></div>
 
         <div id="d1" style="width: 100%; display: flex; padding-bottom:7px;">
           <div id="d2" style="-webkit-text-stroke: .1px black; font-size:14px; padding-left:5px; padding-right:15px; padding-top:5px;">Critical:</div>
           <div id="d3" style="background: rgba(0, 0, 0, 0.05); width: 70%; font-size:14px; padding-right:3px; padding-left:7px; padding-top:3px">${crit}</div>
-        </div>${talentList}`
+        </div>${damageHR}${talentList}`
     } else if (hit > 0){
-        hitmsg = `<br>${spellDesc}<hr>${talentList}<br>`;
+        hitmsg = `<br>${spellDesc}${talentList}`;
     } else {
-		hitmsg = `<br><span style="-webkit-text-stroke:.1px black;font-size:14px;padding-left:5px;padding-right:10px;padding-bottom:10px">Missed!</span><hr>${talentList}`
+		hitmsg = `<br><span style="-webkit-text-stroke:.1px black;font-size:14px;padding-left:5px;padding-right:10px;padding-bottom:10px">Missed!</span><hr id="elseHR">${talentList}`
 	}
 	
 	
-    
+    console.info("newFlavor",newFlavor)
     // remove base damage from output
-	//hitmsg = hitmsg.replace("genesysStrainOutput",genesysStrainOutputx)	
+	//hitmsg = hitmsg.replace("genesysStrainOutput",genesysStrainOutputx)
     newFlavor = newFlavor.replace("replaceMe",hitmsg).replace("genesysStrainOutput",genesysStrainOutputx)
+
     newFlavor = replaceSpellSymbols(newFlavor)	
 
-    newFlavor = newFlavor.replace(/::dx\d+::/g, '');
+    // newFlavor = newFlavor.replace(/#dx\d+/g, ''); // remove #dx# from output
+	newFlavor = newFlavor.replace(/#cr(\d+)/g, '$1') // replace #cr with crit value
     newFlavor = `<div style="line-height: 1.1; padding-top:3px;">${newFlavor}</div>`
     // Modify the flavor field
     chatMessage.updateSource({ flavor: newFlavor });
@@ -667,10 +686,14 @@ Hooks.on("preCreateChatMessage", async (chatMessage, options, userId) => {
 
 // get strain from Description
 function countTalentStrain(desc, ranks) {
-	
-    let match = desc.match(/<p>strain[:=]?\s*(\d+)<\/p>/i);
-    let strain = match ? parseInt(match[1], 10) : 0;
-    return ranks > 0 ? strain * ranks : 0;
+	let suffer = [];
+    let strainmatch = desc.match(/<p>strain[:=]?\s*(\d+)<\/p>/i);
+    let woundmatch = desc.match(/<p>wound[:=]?\s*(\d+)<\/p>/i);
+    let strain = strainmatch ? parseInt(strainmatch[1], 10) : 0;
+    let wound = woundmatch ? parseInt(woundmatch[1], 10) : 0;
+	if(strain > 0) suffer.push(`s:${strain*ranks}`);
+	if(wound > 0) suffer.push(`w:${wound*ranks}`);
+	return ranks > 0 && (strain > 0 || wound > 0) ? [" (" + suffer.join(",") + ")",strain*ranks,wound*ranks] : [];
 }
 
 // name of skill from system usnig skill key.
@@ -772,7 +795,6 @@ function createPageDialog(magicActions, actor) {
       if (actionSkills.includes(skill)) {
         if (!groups[skill]) groups[skill] = [];
         groups[skill].push({ action, index });
-        console.info("Grouping action for skill", skill, actionSkills, actorMagicSkills);
       }
     });
   });
@@ -864,7 +886,6 @@ function groupPagesByMagicSkill(actor, journal) {
 }
 
 // Create spell effects table
-/** Modified createEffectDialog function **/
 async function createEffectDialog(pageContent, skillValue, statRank, skillRank, actor, skillName, magicActionData = null) {
   totalSelected = 0;
   let name, skills, concentration, range, basedifficulty, description;
@@ -879,9 +900,8 @@ async function createEffectDialog(pageContent, skillValue, statRank, skillRank, 
     concentration = magicActionData.concentration;
     range = magicActionData.range;
     basedifficulty = magicActionData.difficulty ? parseInt(magicActionData.difficulty, 10) : 1;
-    description = magicActionData.description.replace(/\\n/g, "</p><p>");
-
-	console.info("description",description)
+    
+    description = magicActionData.description.replaceAll("\n\n", "</p><p>")
 
     // Build row objects from stored effects.
     let rows = [];
@@ -892,16 +912,18 @@ async function createEffectDialog(pageContent, skillValue, statRank, skillRank, 
       let freeColumn = '';
       let selectColumn = '';
       const repeatableValue = parseInt(row.repeatable) || 0;
+      const modRange = Array.from({ length: parseInt(row.repeatable) + 1 }, (_, i) => i);
       if (repeatableValue === 0 || repeatableValue === 1) {
-        freeColumn = `<input class="effect-input" type="checkbox" data-selected-value="${modValue}" data-name="${row.settingName}" onchange="updateDifficulty(${basedifficulty}, '${actor.id}')">`;
-        selectColumn = `<input class="effect-input" type="checkbox" data-selected-value="${modValue}" data-name="${row.settingName}" onchange="updateDifficulty(${basedifficulty}, '${actor.id}')">`;
+        freeColumn = `<input class="effect-input" type="checkbox" data-selected-value="${modValue}" data-name="${row.settingName}">`;
+        selectColumn = `<input class="effect-input" type="checkbox" data-selected-value="${modValue}" data-name="${row.settingName}">`;
       } else if (repeatableValue > 1) {
-        freeColumn = `<select class="effect-input" data-selected-value="0" onchange="updateDifficulty(${basedifficulty}, '${actor.id}')">${[0,1,2,3,4,5].map(val => `<option value="${val}">${val}</option>`).join('')}</select>`;
-        selectColumn = `<select class="effect-input" data-selected-value="0" onchange="updateDifficulty(${basedifficulty}, '${actor.id}')">${[0,1,2,3,4,5].map(val => `<option value="${val}">${val}</option>`).join('')}</select>`;
+        freeColumn = `<select class="effect-input" data-selected-value="0">${modRange.map(val => `<option value="${val}">${val}</option>`).join('')}</select>`;
+        selectColumn = `<select class="effect-input" data-selected-value="0">${modRange.map(val => `<option value="${val}">${val}</option>`).join('')}</select>`;
       }
-      let effectColumnDisplay = `<b>${row.settingName}</b>: ${row.fullDescription}`;
+      let effectColumnDisplay = `<b>${row.effectName}</b>: ${row.fullDescription}`;
       effectColumnDisplay = effectColumnDisplay.replace(/#dx\d+/g, '<span style="display: none">$&</span>');
-      effectColumnDisplay = effectColumnDisplay.replace(/#cr\d+/g, '<span style="display: none">$&</span>');
+      effectColumnDisplay = effectColumnDisplay.replace(/#cr(\d+)/g, '$1<span style="display: none">#cr$1</span>');
+
       let difficultyColumn = "[di]".repeat(Math.abs(modValue));
       if (modValue > 0) {
         difficultyColumn = "+" + difficultyColumn;
@@ -924,7 +946,7 @@ async function createEffectDialog(pageContent, skillValue, statRank, skillRank, 
     rows.sort((a, b) => {
       let cmp = a.modValue - b.modValue;
       if (cmp !== 0) return cmp;
-      return a.settingName.localeCompare(b.settingName);
+      return a.effectName.localeCompare(b.effectName);
     });
     rows.forEach(r => {
       tableRowsHTML += `
@@ -946,12 +968,12 @@ async function createEffectDialog(pageContent, skillValue, statRank, skillRank, 
 
   let dialogContent = `
     <p style="display: flex; justify-content: space-between; align-items: center;">
-  <span><b>Name:</b> <span id="name">${name}</span></span>
-  <button type="button" 
-          style="width: 29px; margin-left: auto;" 
-          id="generateSignature" 
-          title="Generate Signature Spell from selections">+</button>
-</p>
+      <span><b>Name:</b> <span id="name">${name}</span></span>
+      <button type="button" 
+              style="width: 29px; margin-left: auto;" 
+              id="generateSignature" 
+              title="Generate Signature Spell from selections">+</button>
+    </p>
     <p><b>Skills:</b> <span id="skill">${skills}</span></p>
     <p><b>Range:</b> <span id="range">${range}</span></p>
     <p><b>Concentration:</b> <span id="concentration">${concentration}</span></p>
@@ -975,7 +997,6 @@ async function createEffectDialog(pageContent, skillValue, statRank, skillRank, 
     <p>
       <textarea id="spellDescription" rows="3" style="width: 100%; overflow-y: scroll;" placeholder="Describe spell appearance"></textarea>
     </p>
-
   `;
   dialogContent = replaceSpellSymbols(dialogContent).replaceAll("#k", skillValue);
 
@@ -1104,6 +1125,7 @@ async function createEffectDialog(pageContent, skillValue, statRank, skillRank, 
               selectedEffects.push(effectText);
             }
           });
+		  
           let output = selectedEffects.join('<br>');
           const stat = actor.system.skills[magicSkillKey].characteristic;
           const characteristic = actor.system.characteristics[stat];
@@ -1124,6 +1146,7 @@ async function createEffectDialog(pageContent, skillValue, statRank, skillRank, 
             triumph: 0,
             despair: 0
           });
+		  if (selectedEffects.length > 0) output = `<br id="priorSelectedHR">` + output + `<hr id="selectedEffectHR">`;
 		  
           let Msg = `<i>Rolling ${magicSkill}</i><br>
 <div style="background: #d8cbc0; padding-top:10px;">
@@ -1131,16 +1154,17 @@ async function createEffectDialog(pageContent, skillValue, statRank, skillRank, 
   <h2 style="font-size:25px; border-bottom: 1px solid; padding-bottom: 1px; margin-bottom: 0px;">Spell (${name})</h2>
   replaceMe
   ${output}
-  <hr>
+  
   genesysStrainOutput<br>
   <b>Base Range:</b> ${range}<br>
   <b>Base Difficulty:</b> ${baseDif}<br>
 </div>
 </div>
 <span style="display: none;">dam:${statRank}</span>`;
-          let damageMatch = damageString.match(/#dx(\d+)/);
+
+          let damageMatch = Msg.match(/#dx(\d+)/);
           let damageMult = damageMatch ? damageMatch[1] : 1;
-          let critMatch = criticalstring.match(/#cr(\d+)/);
+          let critMatch = output.match(/#cr(\d+)/);
           let critValue = critMatch ? critMatch[1] : 0;
           const spellDescription = document.getElementById('spellDescription').value;
           let selectedTalentsWithScaling = [];
@@ -1167,9 +1191,10 @@ async function createEffectDialog(pageContent, skillValue, statRank, skillRank, 
       html.ready(function() {
         let sigItem = actor.items.find(i => i.name.toLowerCase() === "signature spell");
         let validSignature = false;
+        let match;
         if (sigItem) {
           let desc = sigItem.system.description || "";
-          let match = desc.match(/\[signatureSpell\]([\s\S]*?)\[\/signatureSpell\]/);
+          match = desc.match(/\[signatureSpell\]([\s\S]*?)\[\/signatureSpell\]/);
           if (match) {
             try {
               let data = JSON.parse(match[1]);
@@ -1187,13 +1212,22 @@ async function createEffectDialog(pageContent, skillValue, statRank, skillRank, 
           });
           sigGroup.prop('disabled', true);
           let implHeader = html.find("h3:contains('Implements')");
-          if (implHeader.length && html.find("#signature-invalid-message").length === 0) {
+          if (match && implHeader.length && html.find("#signature-invalid-message").length === 0) {
             implHeader.before(`<p id="signature-invalid-message" style="margin-top:-3px; font-style: italic; color: darkred; font-size: 10pt;">Signature spell not valid for this Action</p>`);
           }
         }
       });
-      // Event handler for the "Generate Signature" button.
+      // Modified event handler for the "Generate Signature" button.
       html.find('#generateSignature').click(function() {
+        let spellDescriptionVal = html.find('#spellDescription').val().trim();
+        if (spellDescriptionVal.length < 10) {
+          new Dialog({
+            title: "Error",
+            content: "Spell Description is insufficent length",
+            buttons: { ok: { label: "OK" } }
+          }).render(true);
+          return;
+        }
         let rowsData = [];
         html.find('tbody tr').each(function(index, row) {
           let $row = $(row);
@@ -1204,7 +1238,7 @@ async function createEffectDialog(pageContent, skillValue, statRank, skillRank, 
           rowsData.push({ row: index, free: freeVal, select: selectVal });
         });
         let spellName = html.find('#name').text().trim();
-        signatureData = { name: spellName, rows: rowsData };
+        signatureData = { name: spellName, rows: rowsData, spellDescription: spellDescriptionVal };
         let signatureText = "[signatureSpell]" + JSON.stringify(signatureData) + "[/signatureSpell]";
         new Dialog({
           title: "Signature Spell Data",
@@ -1222,8 +1256,9 @@ async function createEffectDialog(pageContent, skillValue, statRank, skillRank, 
           return txt.includes("signature spell");
         });
         if ($(this).is(':checked')) {
-          // When one is checked, set both to checked.
+          // When checked, set all to checked and disable #spellDescription.
           group.prop('checked', true);
+          html.find('#spellDescription').prop('disabled', true);
           // Load signature data from the actor's "Signature Spell" item.
           let sigItem = actor.items.find(i => i.name.toLowerCase() === "signature spell");
           if (sigItem) {
@@ -1251,6 +1286,10 @@ async function createEffectDialog(pageContent, skillValue, statRank, skillRank, 
                       }
                     }
                   });
+                  // If stored signature data includes a spell description, populate the field.
+                  if (data.spellDescription) {
+                    html.find('#spellDescription').val(data.spellDescription);
+                  }
                   // Now compute totalSelected from the select column.
                   let sum = 0;
                   html.find('tbody tr').each(function() {
@@ -1271,7 +1310,6 @@ async function createEffectDialog(pageContent, skillValue, statRank, skillRank, 
                   totalSelected = sum;
                   // Disable all inputs in the table.
                   html.find('tbody tr input, tbody tr select').prop('disabled', true);
-                  // Determine reduction: if both checkboxes exist, reduction equals 2; otherwise 1.
                   let reduction = group.length > 1 ? 2 : 1;
                   let computedTotal = totalSelected - reduction;
                   let newDiff = applyUpgrades(basedifficulty + computedTotal, actor)[0];
@@ -1283,13 +1321,13 @@ async function createEffectDialog(pageContent, skillValue, statRank, skillRank, 
             }
           }
         } else {
-          // If either is unchecked, uncheck both and clear all rows.
+          // When unchecked, clear the checkbox group, clear table selections, re-enable and clear #spellDescription.
           group.prop('checked', false);
           html.find('tbody tr input[type="checkbox"]').prop('checked', false);
           html.find('tbody tr select').val("0");
           totalSelected = 0;
-          // Re-enable all inputs.
           html.find('tbody tr input, tbody tr select').prop('disabled', false);
+          html.find('#spellDescription').val('').prop('disabled', false);
           let newDiff = applyUpgrades(basedifficulty + totalSelected, actor)[0];
           html.find('#difficulty').html(`<b>Difficulty:</b> ${replaceSpellSymbols(newDiff)}`);
         }
@@ -1302,6 +1340,31 @@ async function createEffectDialog(pageContent, skillValue, statRank, skillRank, 
           item.sheet.render(true);
         }
       });
+      
+      // NEW: Attach a change event listener to all inputs with class "effect-input" (removing reliance on inline handlers)
+      html.find('.effect-input').on('change', function() {
+        updateDifficultyHandler(basedifficulty, actor.id, html);
+      });
+      
+      // Local updateDifficultyHandler function (no global exposure)
+      function updateDifficultyHandler(basedifficulty, actorId, html) {
+        let actorRef = game.actors.get(actorId);
+        if (!actorRef) return;
+        totalSelected = 0; // Reset totalSelected when calculating difficulty
+        html.find('tbody tr').each(function() {
+          let $row = $(this);
+          let selectCheckbox = $row.find('td:nth-child(2) input[type="checkbox"]');
+          let dropdown = $row.find('td:nth-child(2) select');
+          if (selectCheckbox.length && selectCheckbox.prop('checked')) {
+            totalSelected += Number(selectCheckbox.data('selected-value'));
+          } else if (dropdown.length && Number(dropdown.val()) > 0) {
+            totalSelected += Number(dropdown.val());
+          }
+        });
+        let upgrades = applyUpgrades(basedifficulty + totalSelected, actorRef)[0];
+        upgrades = replaceSpellSymbols(upgrades);
+        html.find('#difficulty').html(`<b>Difficulty:</b> ${upgrades}`);
+      }
     }
   }).render(true, { id: "EffectSelectionDialog", width: 800, resizable: false });
 }

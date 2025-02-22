@@ -1,5 +1,5 @@
 <style>
-  .rounded-tab {
+#spellSelectorConfigDialog .rounded-tab {
     --r: .8em; /* control the curvature */
     border-inline: var(--r) solid #0000;
     border-radius: calc(2*var(--r)) calc(2*var(--r)) 0 0/var(--r);
@@ -8,29 +8,29 @@
     flex: 1;
     margin-left: -22px!important;
   }
-  .rounded-tab.left {
+#spellSelectorConfigDialog  .rounded-tab.left {
     border-left-width: 0;
     border-top-left-radius: var(--r);
   }
-  .rounded-tab.right {
+ #spellSelectorConfigDialog .rounded-tab.right {
     border-right-width: 0;
     border-top-right-radius: var(--r);
   }
-  .tabs > [data-tab].active {
+ #spellSelectorConfigDialog .tabs > [data-tab].active {
     color: white;
     text-shadow: none;
     background-color: rgba(176, 129, 0, 0.5);
   }
-  .tabs {
+ #spellSelectorConfigDialog .tabs {
     margin-bottom: -9px;
     display: flex;
     gap: 5px;
 	padding-left:13px;
   }
-  button.spellTab {
+  #spellSelectorConfigDialog button.spellTab {
     background-color: rgba(176, 129, 0, 0.3);
   }
-  #spellSelectorHR {
+  #spellSelectorConfigDialog #spellSelectorHR {
     border: none;
     height: 1px;
     color: #333;
@@ -54,7 +54,7 @@
   <div style="display: flex; width: 100%; justify-content: space-between; align-items: center;">
     <div style="width: 232px;">
       <button type="button" id="addMagicAction" style="width:122px;  background-color: lightblue;">Add Magic Action</button>
-      <button type="submit" id="saveMagicActions" style="width:100px; background-color: lightblue;">Save</button>
+      <button type="submit" id="saveMagicActions" style="width:100px; background-color: lightblue;">Save Updates</button>
     </div>
     <div style="width: 248px; text-align: center; margin: 0 auto;">
       <button type="button" style="width:100px; background-color: lightgreen;" class="add-effect" data-action-index="{{@index}}">Add Effects</button>
@@ -73,22 +73,27 @@
         <div class="tab-content" data-tab="{{@index}}" style="{{#if @first}}display:block;{{else}}display:none;{{/if}}">
           <p>
                        <label><b>Name:</b> <input type="text" name="action-{{@index}}-name" value="{{this.name}}" style="width:150px"></label>
- <label><b>Difficulty:</b> 
+ <label><b>Base <span title="Base difficulty of action" class="dietype starwars difficulty">d</span>:</b> 
               <select name="action-{{@index}}-difficulty">
                 {{#each (range 1 6)}}
                   <option value="{{this}}" {{#ifEquals this ../this.difficulty}}selected{{/ifEquals}}>{{this}}</option>
                 {{/each}}
               </select>
             </label>
-            <label><b>Causes Wounds</b> <input type="checkbox" id="attackSpellCheckbox" name="action-{{@index}}-damage" {{#if this.damage}}checked{{/if}}></label>
+            <label><b>Attack?</b> <input type="checkbox" id="attackSpellCheckbox" name="action-{{@index}}-damage" {{#if this.damage}}checked{{/if}}></label>
             <label><b>Range:</b> <input type="text" style="width:100px" name="action-{{@index}}-range" value="{{this.range}}"></label>
-            <label><b>Concentration:</b> <input type="text"  style="width:40px" name="action-{{@index}}-concentration" value="{{this.concentration}}"></label>
+            <label><b>Concentration:</b> 
+			  <select name="action-{{@index}}-concentration" style="width:60px;">
+				<option value="Yes" {{#ifEquals this.concentration "Yes"}}selected{{/ifEquals}}>Yes</option>
+				<option value="No" {{#ifEquals this.concentration "No"}}selected{{/ifEquals}}>No</option>
+			  </select>
+			</label>
           </p>
           <p>
             <label><b>Skills (CSV):</b> <input type="text" style="width:696px" name="action-{{@index}}-skills" value="{{this.skills}}"></label>
           </p>
           <p>
-            <label><b>Description:</b> HTML may be used. Us <span style="color: darkred;">\n</span> for line breaks. Dont wrap text in &lt;p&gt;&lt;/p&gt;.<br>
+            <label><b>Description:</b> HTML may be used. A blank line will create a new paragaph. Dont wrap text in &lt;p&gt;&lt;/p&gt;.<br>
               <textarea name="action-{{@index}}-description" style="width:99%">{{this.description}}</textarea>
             </label>
           </p>
@@ -100,25 +105,25 @@
                 <tr>
                   <td style="vertical-align: top;">
                     <div style="padding-top:5px">
+					<!--
                       <strong>Setting Name:</strong>
                       <input type="text"  style="width:200px; padding-right:10px" name="action-{{@../index}}-effect-{{@index}}-settingName" value="{{this.settingName}}">
-                      <strong>Effect Name:</strong>
+					  -->
+                      <strong title="Name of Effect">Name:</strong>
                       <input type="text" style="width:200px" name="action-{{@../index}}-effect-{{@index}}-effectName" value="{{this.effectName}}">
-                    </div>
-                    <div style="padding-top:10px;">
-                      <strong>Mod:</strong>
+                      <strong title="Name of Effect">#<span title="Name of Effect" class="dietype starwars difficulty">d</span>:</strong>
                       <select style=" padding-right:10px;" name="action-{{@../index}}-effect-{{@index}}-mod">
-                        {{#each (range 1 6)}}
+                        {{#each (range 0 6)}}
                           <option value="{{this}}" {{#ifEquals this ../this.mod}}selected{{/ifEquals}}>{{this}}</option>
                         {{/each}}
                       </select>
-                      <strong>Repeatable:</strong>
+                      <strong title="# of allowed levels">Levels:</strong>
                       <select style="padding-right:10px;" name="action-{{@../index}}-effect-{{@index}}-repeatable">
                         {{#each (range 1 6)}}
                           <option value="{{this}}" {{#ifEquals this ../this.repeatable}}selected{{/ifEquals}}>{{this}}</option>
                         {{/each}}
                       </select>
-                      <strong>Skill:</strong>
+                      <strong  title="Exact name of skill from sheet">Skill:</strong>
                       <input type="text" style="width: 100px" name="action-{{@../index}}-effect-{{@index}}-skill" value="{{this.skill}}">
                     </div>
                     <div style="display:flex; padding-top:10px;">
