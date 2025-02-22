@@ -2,7 +2,10 @@
 
 This module allows the "on the fly" creation of spells from the token in accordance with the Genesys magic rules, selecting applicable talents, and implements, and output all results to chat, including base strain.
 
-The spell selector is activated by SHIFT+RIGHT CLICK on the token. This will only be avaiable to actors that have at least one rank 1 in a magic skill.
+The spell selector is activated by SHIFT+RIGHT CLICK on the token. This will only be available to actors that have at least one rank 1 in a magic skill.
+
+
+<img src="https://github.com/Lyinggod/lgs-token-range-bands/blob/main/images/show%20range%20bands.gif" width=500>
 
 **video of spell selector in action**
 
