@@ -4,17 +4,25 @@ ${{\color{Darkred}\Large{\textsf{This\ module\ is\ still\ under\ development\ an
 
 This module allows the "on the fly" creation of spells from the token in accordance with the Genesys magic rules, selecting applicable talents, and implements, and output all results to chat, including base strain.
 
-The spell selector is activated by SHIFT+RIGHT CLICK on the token. This will only be avaiable to actors that have at least one rank 1 in a magic skill.
+The spell selector is activated by SHIFT+RIGHT CLICK on the token. This will only be available to actors that have at least one rank 1 in a magic skill.
 
-**video of spell selector in action**
+<img src="https://github.com/Lyinggod/lgs-genesys-spell-selector/blob/main/docs/spell_selector_example.gif" width=500>
 
-## Configuring Magic Actions
+## Magic Knowledge and Configuring Magic Actions
+
+In Configure Settings, Configure _Magic Knowledge Skill_ via the dropdown. This applies ranks of knowledge to the appropriate effects.
+
+Add actions and effects via the _Configure Spell Selector_ button
+
+<img src="https://github.com/Lyinggod/lgs-genesys-spell-selector/blob/main/docs/config_options.jpg" width=500>
+
+## Adding Actions and Effects
+
+<img src="https://github.com/Lyinggod/lgs-genesys-spell-selector/blob/main/docs/configure_spell_selector.jpg" width=500>
 
 ### Save
 
 This is the most important button. Clicking _Save_ will store your entries. Closing the _Configure Spell Selector_ dialog will without saving will lose any changes.
-
-Magic Actions are add via Configure Settings.
 
 **Add Magic Action:**
 
@@ -32,11 +40,13 @@ Skill names are a comma separated list and must be exactly the same as on the ch
 
 The description may have HTML but should not be wrapped in &lt;p&gt;&lt;/p&gt; other extra spacing will occur.
 
-Use \n for paragraph breaks. Additionally, normal system dice and symbol codes may be used in all descriptions, such as [di].
+Add a blank line between paragraphs to create a new paragraph in the _Spell Selector_. Additionally, normal FFG Star Wars system dice and symbol codes may be used in all descriptions, such as [di].
 
 **Note:** When the actions are saved, any line breaks in any descriptions will be replaced with spaces.
 
-### Adding Effects
+## Adding Effects
+
+Click _Add Effects_ to add additional effects
 
 **Effect Name**: The name of the effect
 
@@ -44,67 +54,65 @@ Use \n for paragraph breaks. Additionally, normal system dice and symbol codes m
 
 **Difficulty:** The base difficulty of the effect
 
-**Repeatable:** 
+**Levels:** 
 
 This determines how the selection option appears on the user's effect selector sheet.
 
 1 = Creates a checkbox
 
-2+ = Creates a checkbox with options ranging from 0 through the value selected.
+2+ = Creates a dropdown with options ranging from 0 through the value selected.
 
-**Full Description:** The description as it appears on the user selection dialog.
+**Full Description:** The description as it appears on the _Spell Selector_ dialog.
 
 **Short Description:** An abreviated description show in the chat when the spell is rolled.
 
 ## Description Codes
 
-THe following codes may be added to the descriptions and will have specific affects if the relevant effect is selected.
+THe following codes may be added to the _Effect_ descriptions and will have specific effects if the relevant effect is selected.
 
-#k = This will show the rank of selected _magic Knowledge_ skill. Example: "Gets #k ranks" will display as "Gets 3 ranks".
+#k = This will show the rank of selected _magic Knowledge_ skill. Example: "Gets #k ranks" will display as "Gets 3 ranks" if the magic knowledge skill = 3.
 
-#dx? - "?" is a number that sets the damage multipler of the base damage. Example: "#dx2" will multiply the base attribute damage by 2.
+#dx? - "?" is a number that sets the damage multipler of the base damage. Example: "#dx2" will multiply the base attribute damage by 2. This will not have a visible affect on the description within the _Spell Selector_ dialog.
 
 #cr? - "?" is a number that sets the Critical rating. Example: "#cr3" would set the Critical rating of the spell to 3.
 
-**Important:** #dx? and #cr? must be placed in the _Short Description_ field.
+**Important:** #dx? and #cr? must be placed in the _Short Description_ field affect the chat output.  
 
 ## Import and Exporting Actions and Effects
 
 This can be used to copy stored Magic Actions between systems.
 
-**Export Actions:** This will export the stored Magic Actions and effects to the computer clipboard.
+**Export Actions:** This will export the stored Magic Actions and effects to the computer clipboard. The save data is in a json format and may be saved to a text file.
 
 **Import Actions:** This will open a box that the previously exported data can be pasted into.
 
-**Image of Config options**
+## Adding Talents to Spells
 
-### Selecting Magical Knowedge skill
+Talents that affect the casting or caster may selected within the spell Spell Selector by adding applicable talents to the actor via the title bar.
 
-_Magic Knowledge Skill_ is the skill used for magical knowledge checks.
-
-## Amplifying Information
-
-Additional information may be added to the chat card based on the following.
-
-### Adding Talents for selection in the Spell Selector
-
-Talents can be selected on the spell selector and will show in the chat card for the spell. 
+<img src="https://github.com/Lyinggod/lgs-genesys-spell-selector/blob/main/docs/spell_talent_selector.jpg" width=500>
 
 To add a spell, select the **3 bars** from the actors title header. Add talents by pressing the "**+**" button. 
 
-**Scaling:** This indicates that the talent allows the user to spend something to get something based on ranks in something such as _may spend 1 strain to get 1 advantage per rank in this talent_. 
+<img src="https://github.com/Lyinggod/lgs-genesys-spell-selector/blob/main/docs/talent_selector.jpg" width=400>
 
-Scaling talents will have a drop down appear next to their name in the spell selector to allow the caster to select the number of levels of effect they are applying. Therefore if the talent has "strain: 2" in the description and is scaling, if the user selects 2 ranks from the spell selector drop box, the strain from this talent would be 2x2=4.
+**Scaling:** This indicates that the talent allows the user to spend something to get something based on ranks in something such as _may spend 1 strain to get 1 advantage per rank in this talent_. 
 
 # Wound and Strain Calculation
 
-The chat card can show the base strain that the spell will cost by modifying the description of talent on the actor.
+Wounds and strain inflicted from talent can be shown in the chat message.  To have these values displayed per talent and in total add either of the following on their own line within the talents description on the actor:
 
-On its own line, add "Strain: #" to the description of a talent. If the talent is scaling, this number will be multipled by the value of the selected dropdown next to the scaling talent on the spell spell selector.
+wound: 2
 
-The normal 2 strain, as per casting rules, is then added to this total.
+strain: 2
 
-Adding "Wounds: #" will show the number of wounds inflicted on the caster in the same manner as strain.
+difficulty: 2 - This will appear in the chat as "+[di][di]" (difficulty dice)
+
+<img src="https://github.com/Lyinggod/lgs-genesys-spell-selector/blob/main/docs/harsh_talent.jpg" width=300> <img src="https://github.com/Lyinggod/lgs-genesys-spell-selector/blob/main/docs/spell-block.jpg">
+
+If the talent is stored on the actor as _Scaling_ then these values are multiplied by the number of levels selected by the user.
+
+**Note**: These are provided for informational purposes and are not automatically applied to an actor.
 
 ## Talents with Story Points
 
@@ -116,7 +124,15 @@ The spell selector will apply the benefits of the Signature Spell talent if conf
 
 After selecting the desired spell effect, the "**+**" on the spell selector will display a dialog with the signature talent data. Paste this into the _Signature Spell_ talent's description, at the bottom.
 
-Selecting _Signature Spell_ talent will assign the saved values to the selector and provide the -1 difficulty reduction. If the actor has _Signature Spell (Improved)_, -2 difficulty will be applied.
+<img src="https://github.com/Lyinggod/lgs-genesys-spell-selector/blob/main/docs/storing_spell_signature.jpg" width=400>
+
+<img src="https://github.com/Lyinggod/lgs-genesys-spell-selector/blob/main/docs/signature_spell_data.jpg" width=400>
+
+This must be pasted into the talents description. This may be wrapped in a _Secret_ block to hide it.
+
+<img src="https://github.com/Lyinggod/lgs-genesys-spell-selector/blob/main/docs/signature_spell_data_in_talent.jpg" width=400>
+
+Selecting _Signature Spell_ talent in the _Spell Selector_ will assign the saved values to the selector and provide the -1 difficulty reduction. If the actor has _Signature Spell (Improved)_, -2 difficulty will be applied.
 
 **Note:** The Signature Spell talent will only be avaiable if the correct magic action is applied and the selection data has been stored in talents description.
 
@@ -124,14 +140,13 @@ Selecting _Signature Spell_ talent will assign the saved values to the selector 
 
 Implements that are applied to a particular spell may also be selected from the spell selector.
 
-To define an item as an implement, add "implement" on a line by itself in the description of the item. An implement has no effect except to show which implement was used. Any benefits the implement by bestow should be applied manually, after the roll.
+To define an item as an implement, add "implement" on a line by itself in the description of the item. An implement has no effect except to show in the chat which implement was used. Any benefits the implement bestows should be applied manually, after the roll.
 
-
-## Spell Selector
+# Spell Selector
 
 **Free Column**: If a something grants a free effect, select the effect in this column.
 
-**Select Column:** This column determines to total difficulty of the spell based on selected effects.
+**Select Column:** This column determines the total difficulty of the spell based on selected effects.
 
 **Describe Spell Appearance** - this is optional and may be used to provide a narrative description of how the spell manifest: ie _a swarm of angry butterflies_.
 
@@ -139,6 +154,15 @@ To define an item as an implement, add "implement" on a line by itself in the de
 
 **Implements:** The implement being used for this casting. The implement does not have an effect on the roll or chat result beyond noting is usage.
 
+# Chat Output
 
+<img src="https://github.com/Lyinggod/lgs-genesys-spell-selector/blob/main/docs/chat_output.jpg" width=400>
 
+In this example, that shows the following
+- it shows strain and wounds from the talent _Harsh Talent_
+- The talents applied
+- Total Strain and wounds from all talents
+- Base Range
+- Base difficuly before the player manually reduced it due to talents or other reason
+  
 
