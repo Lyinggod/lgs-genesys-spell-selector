@@ -611,18 +611,19 @@ Hooks.on("preCreateChatMessage", async (chatMessage, options, userId) => {
 	let stat = flavorArray[1];
 	console.info("stat",stat)
 	let spellText = flavorArray[5]
-	console.info("damageMult",damageMult)
+	console.info("flavorArray[6]",flavorArray[6])
 	
 	if (spellText.length > 0) spellText = spellText + `<hr id="spellTextHR">`;
 	// Process the talent UUIDs and create links
 	let selectedTalentsWithScaling = JSON.parse(flavorArray[6]);
-
 	let talentList = "";
 	let strainTotal = 0;
 	let woundTotal = 0;
 	if (selectedTalentsWithScaling.length > 0) {
 		let talentsArray = await Promise.all(selectedTalentsWithScaling.map(ts => fromUuid(ts.uuid)));
+		console.info("talentsArray",talentsArray)
 		let talentLinks = talentsArray.map((talent, index) => {
+			console.info("talent",talent.system.description)
 			if (!talent) return '';
 			let itemUuid = talent.uuid;
 			let fullItem = talent;
@@ -633,9 +634,13 @@ Hooks.on("preCreateChatMessage", async (chatMessage, options, userId) => {
 				talentName += ' ' + scalingNumber;
 			}
 			let suffer = countTalentStrain(talent.system.description,strainMult);
-			talentName = talentName +suffer[0]; // strain and wounds from talent, if any x ranks
-			strainTotal += suffer[1]; // strain from select ranks * defined strain
-			woundTotal += suffer[2]; // wounds from talents
+			let talentDamage = suffer[0] ? suffer[0] : "";
+			let strainDamage = suffer[1] ? suffer[1]: 0;
+			let sufferedWounds = suffer[2] ? suffer[2] : 0;
+			console.info("selectedTalentsWithScaling",selectedTalentsWithScaling)
+			talentName = talentName +talentDamage; // strain and wounds from talent, if any x ranks
+			strainTotal += strainDamage; // strain from select ranks * defined strain
+			woundTotal += sufferedWounds; // wounds from talents
 			return `<a class="" draggable="true" data-link="" data-uuid="${itemUuid}" data-id="${fullItem.id}" data-type="Item" data-tooltip="" data-scope="">${talentName}</a>`;
 		}).join(", ");
 		talentList = "<b>Applied Talents</b>: " + talentLinks;
@@ -664,6 +669,7 @@ Hooks.on("preCreateChatMessage", async (chatMessage, options, userId) => {
     } else {
 		hitmsg = `<br><span style="-webkit-text-stroke:.1px black;font-size:14px;padding-left:5px;padding-right:10px;padding-bottom:10px">Missed!</span><hr id="elseHR">${talentList}`
 	}
+console.info("hitmsg",hitmsg)
 	
 	
     console.info("newFlavor",newFlavor)
@@ -673,7 +679,7 @@ Hooks.on("preCreateChatMessage", async (chatMessage, options, userId) => {
 
     newFlavor = replaceSpellSymbols(newFlavor)	
 
-    // newFlavor = newFlavor.replace(/#dx\d+/g, ''); // remove #dx# from output
+    newFlavor = newFlavor.replace(/#dx\d+/g, ''); // remove #dx# from output
 	newFlavor = newFlavor.replace(/#cr(\d+)/g, '$1') // replace #cr with crit value
     newFlavor = `<div style="line-height: 1.1; padding-top:3px;">${newFlavor}</div>`
     // Modify the flavor field
@@ -693,7 +699,9 @@ function countTalentStrain(desc, ranks) {
     let wound = woundmatch ? parseInt(woundmatch[1], 10) : 0;
 	if(strain > 0) suffer.push(`s:${strain*ranks}`);
 	if(wound > 0) suffer.push(`w:${wound*ranks}`);
-	return ranks > 0 && (strain > 0 || wound > 0) ? [" (" + suffer.join(",") + ")",strain*ranks,wound*ranks] : [];
+	let output = ranks > 0 && (strain > 0 || wound > 0) ? [" (" + suffer.join(",") + ")",strain*ranks,wound*ranks] : [];
+	console.info("output",output)
+	return output;
 }
 
 // name of skill from system usnig skill key.
@@ -967,6 +975,26 @@ async function createEffectDialog(pageContent, skillValue, statRank, skillRank, 
   attackspell = magicActionData && magicActionData.damage ? true : false;
 
   let dialogContent = `
+  <style>
+  
+@keyframes fadeToBlack {
+    0% { color: darkred; }
+    12.5% { color: black; }
+    25% { color: darkred; }
+    37.5% { color: black; }
+    50% { color: darkred; }
+    62.5% { color: black; }
+    75% { color: darkred; }
+    87.5% { color: black; }
+    100% { color: darkred; }
+}
+
+#EffectSelectionDialog .fading-text {
+    color: darkred;
+    animation: fadeToBlack 12s linear forwards;
+}
+  </style>
+  
     <p style="display: flex; justify-content: space-between; align-items: center;">
       <span><b>Name:</b> <span id="name">${name}</span></span>
       <button type="button" 
@@ -981,6 +1009,7 @@ async function createEffectDialog(pageContent, skillValue, statRank, skillRank, 
     <p style="text-align:center; font-size:20px;" id="difficulty" data-basedifficulty="${basedifficulty}">
       <b>Difficulty:</b> ${replaceSpellSymbols(upgrades)}
     </p>
+	<p class="fading-text"><b>Available Effects:</b> The following is a list of suggested effects and not a definitive list. If you want to do something in line with the Magic Action, work out the details and difficulty with your GM.</p>
     <figure class="table">
       <table border="1">
         <thead>
@@ -1171,7 +1200,9 @@ async function createEffectDialog(pageContent, skillValue, statRank, skillRank, 
           document.querySelectorAll('#EffectSelectionDialog input[name="talent"]:checked').forEach(cb => {
             let uuid = cb.value;
             let scalingDropdown = cb.parentElement.querySelector(`select[name="talent-scaling-${uuid}"]`);
+			
             let scalingNumber = scalingDropdown ? scalingDropdown.value : '';
+			console.info("get cb",cb)
             selectedTalentsWithScaling.push({ uuid, scalingNumber });
           });
           document.querySelectorAll('#EffectSelectionDialog input[name="talent-story"]:checked').forEach(cb => {
