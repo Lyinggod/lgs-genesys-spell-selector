@@ -88,7 +88,11 @@ This can be used to copy stored Magic Actions between systems.
 
 ## Adding Talents to Spells
 
-Talents that affect the casting or caster may selected within the spell Spell Selector by adding applicable talents to the actor via the title bar.
+Talents that affect the casting or caster may selected within the spell Spell Selector by adding applicable talents to the actor via the title bar. 
+
+An expanable help section is provided to the user with avaiable options.
+
+If a talent is ranked, it will have "r:#" in the name of the talent.
 
 <img src="https://github.com/Lyinggod/lgs-genesys-spell-selector/blob/main/docs/spell_talent_selector.jpg" width=500>
 
@@ -96,9 +100,15 @@ To add a spell, select the **3 bars** from the actors title header. Add talents 
 
 <img src="https://github.com/Lyinggod/lgs-genesys-spell-selector/blob/main/docs/talent_selector.jpg" width=400>
 
-**Scaling:** This indicates that the talent allows the user to spend something to get something based on ranks in something such as _may spend 1 strain to get 1 advantage per rank in this talent_. 
+**Scaling:** This indicates that the talent allows the user to spend something to get something based on ranks in something such as _may spend 1 strain to get 1 advantage per rank in this talent_.
 
-# Wound and Strain Calculation
+Note: The FFG Star Wars systems stores ranked talents individually on the actor. As an example "Grit" as rank 4 is stored as 4 separate talents. This means that a switch is stored in the selected talent. Some switches can be defined before being placed on the actor. Others are defined at the time of purchase. This is significant because if a talent is removed from the above dialog and then added back in, different version of the talent may be added, requiring some switched to be re-applied to the talent.
+
+# Switches
+
+A switch is a line of text that is added to an items description. 
+
+The following switch are avaiable.
 
 Wounds and strain inflicted from talent can be shown in the chat message.  To have these values displayed per talent and in total add either of the following on their own line within the talents description on the actor:
 
