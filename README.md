@@ -108,15 +108,16 @@ Note: The FFG Star Wars systems stores ranked talents individually on the actor.
 
 A switch is a line of text that is added to an items description. 
 
-The following switch are avaiable.
+The following switches are avaiable.
 
 Wounds and strain inflicted from talent can be shown in the chat message.  To have these values displayed per talent and in total add either of the following on their own line within the talents description on the actor:
 
-wound: 2
-
-strain: 2
-
-difficulty: 2 - This will appear in the chat as "+[di][di]" (difficulty dice)
+- **wound: #** - # is the number of wounds inflicted times the rank multipler. This appear in chat for each applicable talent as "(w:#)" and in total wounds taken
+- **strain: #** - # is the number of strain inflicted times the rank multipler. This appear in chat for each applicable talent as "(s:#)" and in total train taken
+- **free: #** - # is a comma separated list of effects. Effect is automatically selected in the "Free" column or the dropdown is set to 1. This can be toggle off.
+- **force: #** - # is a comma separted list of effects that will alway be applied under the "Free" column and cannot be unchecked. The talent with this is automatically checked.
+- **never: #** - # is a comma separted list of effects that will never be allowed. The talent checkbox with this is automatically checked and cannot be unchecked. Checkboxes and dropdowns for this effect are disabled.
+- **difficulty: #** - This reduces the difficulty when the talent is selected. The note of the reduction is shown after the talent name in chat.
 
 <img src="https://github.com/Lyinggod/lgs-genesys-spell-selector/blob/main/docs/harsh_talent.jpg" width=300> <img src="https://github.com/Lyinggod/lgs-genesys-spell-selector/blob/main/docs/spell-block.jpg">
 
