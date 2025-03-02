@@ -1,6 +1,8 @@
-# Lyinggod's Spell Selector for Genesys TTRPG
+![image](https://github.com/user-attachments/assets/0bb71ae8-b650-4774-a6fd-afb042dcc4fc)# Lyinggod's Spell Selector for Genesys TTRPG
 
 ${{\color{Darkred}\Large{\textsf{This\ module\ is\ still\ under\ development\ and\ may\ have\ errors\ \}}}}\$
+
+**The instructions are likely outpacing the releases**
 
 This module allows the "on the fly" creation of spells from the token in accordance with the Genesys magic rules, selecting applicable talents, and implements, and output all results to chat, including base strain.
 
@@ -112,12 +114,21 @@ The following switches are avaiable.
 
 Wounds and strain inflicted from talent can be shown in the chat message.  To have these values displayed per talent and in total add either of the following on their own line within the talents description on the actor:
 
+**Talent Switches**
 - **wound: #** - # is the number of wounds inflicted times the rank multipler. This appear in chat for each applicable talent as "(w:#)" and in total wounds taken
 - **strain: #** - # is the number of strain inflicted times the rank multipler. This appear in chat for each applicable talent as "(s:#)" and in total train taken
 - **free: #** - # is a comma separated list of effects. Effect is automatically selected in the "Free" column or the dropdown is set to 1. This can be toggle off.
 - **force: #** - # is a comma separted list of effects that will alway be applied under the "Free" column and cannot be unchecked. The talent with this is automatically checked.
 - **never: #** - # is a comma separted list of effects that will never be allowed. The talent checkbox with this is automatically checked and cannot be unchecked. Checkboxes and dropdowns for this effect are disabled.
 - **difficulty: #** - This reduces the difficulty when the talent is selected. The note of the reduction is shown after the talent name in chat.
+- **note: #** - # is a string. This appears below the effects and meant to be a reminder to the caster of somthing regarding the talent
+
+**Implement Switches**
+
+Implement switches are placed in the description of an item.
+
+- **implement** - Assigns the item to the spell selector.
+- **extraSuccessAfterHit: #** - May be positive or negative. Modifies the damage of a successful attack. Non-attack spells just show only bonus from implement (see spell block example)
 
 <img src="https://github.com/Lyinggod/lgs-genesys-spell-selector/blob/main/docs/harsh_talent.jpg" width=300> <img src="https://github.com/Lyinggod/lgs-genesys-spell-selector/blob/main/docs/spell-block.jpg">
 
