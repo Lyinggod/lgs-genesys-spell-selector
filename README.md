@@ -1,4 +1,4 @@
-![image](https://github.com/user-attachments/assets/0bb71ae8-b650-4774-a6fd-afb042dcc4fc)# Lyinggod's Spell Selector for Genesys TTRPG
+# Lyinggod's Spell Selector for Genesys TTRPG
 
 ${{\color{Darkred}\Large{\textsf{This\ module\ is\ still\ under\ development\ and\ may\ have\ errors\ \}}}}\$
 
