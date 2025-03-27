@@ -8,6 +8,7 @@ let magicSkillKey;
 let statRank;
 let totalSelected // selected difficulty
 let attackspell;
+let lastSelectedTokenName = ""; // global variable for storing the token name
 
 // Add the font awesome list icon to the actor sheet header for characters
 Hooks.on("getActorSheetHeaderButtons", (sheet, buttonArray) => {
@@ -606,55 +607,48 @@ Hooks.on("preCreateChatMessage", async (chatMessage, options, userId) => {
     let flavorArray = msg.data.addMsg;
     let newFlavor = flavorArray[0];
     let crit = flavorArray[3] > 0 ? flavorArray[3] : `<span class="dietype genesys triumph">t</span>`;
-    let damageMult = parseInt(flavorArray[2]) 
+    let damageMult = parseInt(flavorArray[2]);
     let isAttackSpell = flavorArray[4];
-	let stat = flavorArray[1];
-	console.info("stat",stat)
-	let spellText = flavorArray[5]
-	console.info("flavorArray[6]",flavorArray[6])
-	
-	if (spellText.length > 0) spellText = spellText + `<hr id="spellTextHR">`;
-	// Process the talent UUIDs and create links
-	let selectedTalentsWithScaling = JSON.parse(flavorArray[6]);
-	let talentList = "";
-	let strainTotal = 0;
-	let woundTotal = 0;
-	if (selectedTalentsWithScaling.length > 0) {
-		let talentsArray = await Promise.all(selectedTalentsWithScaling.map(ts => fromUuid(ts.uuid)));
-		console.info("talentsArray",talentsArray)
-		let talentLinks = talentsArray.map((talent, index) => {
-			console.info("talent",talent.system.description)
-			if (!talent) return '';
-			let itemUuid = talent.uuid;
-			let fullItem = talent;
-			let scalingNumber = selectedTalentsWithScaling[index].scalingNumber;
-			let strainMult = scalingNumber > 0 ? scalingNumber : 1;
-			let talentName = talent.name;
-			if (scalingNumber !== '') {
-				talentName += ' ' + scalingNumber;
-			}
-			let suffer = countTalentStrain(talent.system.description,strainMult);
-			let talentDamage = suffer[0] ? suffer[0] : "";
-			let strainDamage = suffer[1] ? suffer[1]: 0;
-			let sufferedWounds = suffer[2] ? suffer[2] : 0;
-			console.info("selectedTalentsWithScaling",selectedTalentsWithScaling)
-			talentName = talentName +talentDamage; // strain and wounds from talent, if any x ranks
-			strainTotal += strainDamage; // strain from select ranks * defined strain
-			woundTotal += sufferedWounds; // wounds from talents
-			return `<a class="" draggable="true" data-link="" data-uuid="${itemUuid}" data-id="${fullItem.id}" data-type="Item" data-tooltip="" data-scope="">${talentName}</a>`;
-		}).join(", ");
-		talentList = "<b>Applied Talents</b>: " + talentLinks;
-		talentList = spellText > "" ? talentList : talentList //+"<hr>";
-	}
-//+`<hr id="talentListHR">`
+    let stat = flavorArray[1];
+    let spellText = flavorArray[5];
+    
+    if (spellText.length > 0) spellText = spellText + `<hr id="spellTextHR">`;
+    // Process the talent UUIDs and create links
+    let selectedTalentsWithScaling = JSON.parse(flavorArray[6]);
+    let talentList = "";
+    let strainTotal = 0;
+    let woundTotal = 0;
+    if (selectedTalentsWithScaling.length > 0) {
+      let talentsArray = await Promise.all(selectedTalentsWithScaling.map(ts => fromUuid(ts.uuid)));
+      let talentLinks = talentsArray.map((talent, index) => {
+        if (!talent) return '';
+        let itemUuid = talent.uuid;
+        let fullItem = talent;
+        let scalingNumber = selectedTalentsWithScaling[index].scalingNumber;
+        let strainMult = scalingNumber > 0 ? scalingNumber : 1;
+        let talentName = talent.name;
+        if (scalingNumber !== '') {
+          talentName += ' ' + scalingNumber;
+        }
+        let suffer = countTalentStrain(talent.system.description, strainMult);
+        let talentDamage = suffer[0] ? suffer[0] : "";
+        let strainDamage = suffer[1] ? suffer[1] : 0;
+        let sufferedWounds = suffer[2] ? suffer[2] : 0;
+        talentName = talentName + talentDamage; // strain and wounds from talent, if any x ranks
+        strainTotal += strainDamage; // strain from select ranks * defined strain
+        woundTotal += sufferedWounds; // wounds from talents
+        return `<a class="" draggable="true" data-link="" data-uuid="${itemUuid}" data-id="${fullItem.id}" data-type="Item" data-tooltip="" data-scope="">${talentName}</a>`;
+      }).join(", ");
+      talentList = "<b>Applied Talents</b>: " + talentLinks;
+      talentList = spellText > "" ? talentList : talentList;
+    }
     let damage = stat * damageMult;
-	console.info("damage",stat,damageMult,stat*damageMult)
     let damageHR = damage > 0 ? `<hr id="damageHR">` : "";
     let hit = 0;
     let spellDesc = `<span style="color: #000475;">${spellText}</span>`;
     let hitmsg = `${spellDesc}<br>`;
-	let woundsTaken = woundTotal > 0 ? `&nbsp;&nbsp;&nbsp;<b>Wounds Suffered:</b> ${woundTotal}` : "";
-    let genesysStrainOutputx = `<b>Strain Cost:</b> ${strainTotal+2}${woundsTaken}`;
+    let woundsTaken = woundTotal > 0 ? `&nbsp;&nbsp;&nbsp;<b>Wounds Suffered:</b> ${woundTotal}` : "";
+    let genesysStrainOutputx = `<div><hr><b>Strain Cost:</b> ${strainTotal+2}${woundsTaken}</div>`;
     if (msg.ffg.success > 0) hit = msg.ffg.success;
     if (hit > 0 && isAttackSpell) {
         hitmsg = `
@@ -663,46 +657,52 @@ Hooks.on("preCreateChatMessage", async (chatMessage, options, userId) => {
         <div id="d1" style="width: 100%; display: flex; padding-bottom:7px;">
           <div id="d2" style="-webkit-text-stroke: .1px black; font-size:14px; padding-left:5px; padding-right:15px; padding-top:5px;">Critical:</div>
           <div id="d3" style="background: rgba(0, 0, 0, 0.05); width: 70%; font-size:14px; padding-right:3px; padding-left:7px; padding-top:3px">${crit}</div>
-        </div>${damageHR}${talentList}`
+        </div>${damageHR}${talentList}`;
     } else if (hit > 0){
         hitmsg = `<br>${spellDesc}${talentList}`;
     } else {
-		hitmsg = `<br><span style="-webkit-text-stroke:.1px black;font-size:14px;padding-left:5px;padding-right:10px;padding-bottom:10px">Missed!</span><hr id="elseHR">${talentList}`
+		hitmsg = `<br><span style="-webkit-text-stroke:.1px black;font-size:14px;padding-left:5px;padding-right:10px;padding-bottom:10px">Missed!</span><hr id="elseHR">${talentList}`;
 	}
-console.info("hitmsg",hitmsg)
-	
-	
-    console.info("newFlavor",newFlavor)
-    // remove base damage from output
-	//hitmsg = hitmsg.replace("genesysStrainOutput",genesysStrainOutputx)
-    newFlavor = newFlavor.replace("replaceMe",hitmsg).replace("genesysStrainOutput",genesysStrainOutputx)
-
-    newFlavor = replaceSpellSymbols(newFlavor)	
-
-    newFlavor = newFlavor.replace(/#dx\d+/g, ''); // remove #dx# from output
-	newFlavor = newFlavor.replace(/#cr(\d+)/g, '$1') // replace #cr with crit value
-    newFlavor = `<div style="line-height: 1.1; padding-top:3px;">${newFlavor}</div>`
-    // Modify the flavor field
-    chatMessage.updateSource({ flavor: newFlavor });
-    // Clear the addMsg field
+    newFlavor = newFlavor.replace("replaceMe", hitmsg).replace("genesysStrainOutput", genesysStrainOutputx);
+    newFlavor = replaceSpellSymbols(newFlavor);	
+    newFlavor = newFlavor.replace(/#dx\d+/g, '');
+	newFlavor = newFlavor.replace(/#cr(\d+)/g, '$1');
+    newFlavor = `<div style="line-height: 1.1; padding-top:3px;">${newFlavor}</div>`;
+    // Update the chat message source with the new flavor and set the speaker alias to the token name (if available)
+    chatMessage.updateSource({ 
+      flavor: newFlavor,
+      speaker: { alias: lastSelectedTokenName || game.user.name }
+    });
     chatMessage.rolls[0].data.addMsg = "";
-
   }
 });
 
 // get strain from Description
 function countTalentStrain(desc, ranks) {
-	let suffer = [];
-    let strainmatch = desc.match(/<p>strain[:=]?\s*(\d+)<\/p>/i);
-    let woundmatch = desc.match(/<p>wound[:=]?\s*(\d+)<\/p>/i);
-    let strain = strainmatch ? parseInt(strainmatch[1], 10) : 0;
-    let wound = woundmatch ? parseInt(woundmatch[1], 10) : 0;
-	if(strain > 0) suffer.push(`s:${strain*ranks}`);
-	if(wound > 0) suffer.push(`w:${wound*ranks}`);
-	let output = ranks > 0 && (strain > 0 || wound > 0) ? [" (" + suffer.join(",") + ")",strain*ranks,wound*ranks] : [];
-	console.info("output",output)
-	return output;
+  let strainmatch = desc.match(/<p>\s*strain[s]?\s*[:]?\s*(-?\d+)\s*<\/p>/i);
+  let woundmatch = desc.match(/<p>\s*wounds?\s*[:]?\s*(-?\d+)\s*<\/p>/i);
+  let diffmatch = desc.match(/<p>\s*difficulty\s*[:]?\s*(-?\d+)\s*<\/p>/i);
+  let strain = strainmatch ? parseInt(strainmatch[1], 10) : 0;
+  let wound = woundmatch ? parseInt(woundmatch[1], 10) : 0;
+  let diff = diffmatch ? parseInt(diffmatch[1], 10) : 0;
+  // Compute adjustment based solely on difficulty if diff is present
+  let adjust = diffmatch ? -Math.round(diff / 3) : 0;
+  // Only add adjustment if a strain or wound tag exists
+  let effectiveStrain = (strainmatch ? strain * ranks : 0) + adjust;
+  let effectiveWound = (woundmatch ? wound * ranks : 0) + adjust;
+  let tokens = [];
+  if (strainmatch && effectiveStrain !== 0) tokens.push(`s:${effectiveStrain}`);
+  if (woundmatch && effectiveWound !== 0) tokens.push(`w:${effectiveWound}`);
+  if (diffmatch && diff !== 0) {
+    let diffSymbols = replaceSpellSymbols('[di]'.repeat(Math.abs(diff)));
+    let sign = diff < 0 ? '-' : '+';
+    tokens.push(`${sign}${diffSymbols}`);
+  }
+  let output = tokens.length > 0 ? " (" + tokens.join(", ") + ")" : "";
+  return [output, effectiveStrain, effectiveWound];
 }
+
+
 
 // name of skill from system usnig skill key.
 function getSkillName(skillName) {
@@ -759,6 +759,7 @@ async function onRightClick(event) {
   if (!event.shiftKey) return;
   const selectedToken = canvas.tokens.controlled[0];
   if (!selectedToken) return;
+  lastSelectedTokenName = selectedToken.name; // store the token's name
   const actor = selectedToken.actor;
   if (!actor) return;
   const selectedSkill = game.settings.get("lgs-genesys-spell-selector", "magicKnowledgeSkill");
@@ -893,6 +894,7 @@ function groupPagesByMagicSkill(actor, journal) {
   return { pagesBySkill, skillValues };
 }
 
+// Create spell effects table
 // Create spell effects table
 async function createEffectDialog(pageContent, skillValue, statRank, skillRank, actor, skillName, magicActionData = null) {
   totalSelected = 0;
@@ -1175,7 +1177,7 @@ async function createEffectDialog(pageContent, skillValue, statRank, skillRank, 
             triumph: 0,
             despair: 0
           });
-		  if (selectedEffects.length > 0) output = `<br id="priorSelectedHR">` + output + `<hr id="selectedEffectHR">`;
+		 if (selectedEffects.length > 0) output = `<div id="priorSelectedHR"><hr>` + output + "</div>"//+ `<hr id="selectedEffectHR">`;
 		  
           let Msg = `<i>Rolling ${magicSkill}</i><br>
 <div style="background: #d8cbc0; padding-top:10px;">
@@ -1184,7 +1186,7 @@ async function createEffectDialog(pageContent, skillValue, statRank, skillRank, 
   replaceMe
   ${output}
   
-  genesysStrainOutput<br>
+  genesysStrainOutput
   <b>Base Range:</b> ${range}<br>
   <b>Base Difficulty:</b> ${baseDif}<br>
 </div>
@@ -1200,9 +1202,7 @@ async function createEffectDialog(pageContent, skillValue, statRank, skillRank, 
           document.querySelectorAll('#EffectSelectionDialog input[name="talent"]:checked').forEach(cb => {
             let uuid = cb.value;
             let scalingDropdown = cb.parentElement.querySelector(`select[name="talent-scaling-${uuid}"]`);
-			
             let scalingNumber = scalingDropdown ? scalingDropdown.value : '';
-			console.info("get cb",cb)
             selectedTalentsWithScaling.push({ uuid, scalingNumber });
           });
           document.querySelectorAll('#EffectSelectionDialog input[name="talent-story"]:checked').forEach(cb => {
@@ -1371,31 +1371,51 @@ async function createEffectDialog(pageContent, skillValue, statRank, skillRank, 
           item.sheet.render(true);
         }
       });
-      
-      // NEW: Attach a change event listener to all inputs with class "effect-input" (removing reliance on inline handlers)
+      // NEW: Attach change event listeners to talent inputs so that their difficulty adjustments are included
+      html.find('input[name="talent"], input[name="talent-story"]').on('change', function() {
+         updateDifficultyHandler(basedifficulty, actor.id, html);
+      });
+      // Modified event handler for changes on all inputs with class "effect-input"
       html.find('.effect-input').on('change', function() {
-        updateDifficultyHandler(basedifficulty, actor.id, html);
+         updateDifficultyHandler(basedifficulty, actor.id, html);
       });
       
-      // Local updateDifficultyHandler function (no global exposure)
-      function updateDifficultyHandler(basedifficulty, actorId, html) {
-        let actorRef = game.actors.get(actorId);
-        if (!actorRef) return;
-        totalSelected = 0; // Reset totalSelected when calculating difficulty
-        html.find('tbody tr').each(function() {
-          let $row = $(this);
-          let selectCheckbox = $row.find('td:nth-child(2) input[type="checkbox"]');
-          let dropdown = $row.find('td:nth-child(2) select');
-          if (selectCheckbox.length && selectCheckbox.prop('checked')) {
-            totalSelected += Number(selectCheckbox.data('selected-value'));
-          } else if (dropdown.length && Number(dropdown.val()) > 0) {
-            totalSelected += Number(dropdown.val());
-          }
-        });
-        let upgrades = applyUpgrades(basedifficulty + totalSelected, actorRef)[0];
-        upgrades = replaceSpellSymbols(upgrades);
-        html.find('#difficulty').html(`<b>Difficulty:</b> ${upgrades}`);
-      }
+      // Local updateDifficultyHandler function (modified to include talent difficulty)
+		function updateDifficultyHandler(basedifficulty, actorId, html) {
+		  let actorRef = game.actors.get(actorId);
+		  if (!actorRef) return;
+		  let tableSum = 0;
+		  html.find('tbody tr').each(function() {
+			let $row = $(this);
+			let selectCheckbox = $row.find('td:nth-child(2) input[type="checkbox"]');
+			let dropdown = $row.find('td:nth-child(2) select');
+			if (selectCheckbox.length && selectCheckbox.prop('checked')) {
+			  tableSum += Number(selectCheckbox.data('selected-value'));
+			} else if (dropdown.length && Number(dropdown.val()) > 0) {
+			  tableSum += Number(dropdown.val());
+			}
+		  });
+		  let talentAdjustment = 0;
+		  html.find('input[name="talent"]:checked, input[name="talent-story"]:checked').each(function() {
+			let uuid = $(this).val();
+			let talent = actorRef.items.find(i => i.uuid === uuid);
+			if (talent && talent.system.description) {
+			  let match = talent.system.description.match(/<p>\s*difficulty\s*[:]?\s*(-?\d+)\s*<\/p>/i);
+			  if (match) {
+				talentAdjustment += parseInt(match[1], 10);
+			  }
+			}
+		  });
+		  totalSelected = tableSum + talentAdjustment;
+		  let overall = basedifficulty + totalSelected;
+		  if (overall < 1) {
+			ui.notifications.warn("Minimum spell difficulty is 1");
+			overall = 1;
+		  }
+		  let upgrades = applyUpgrades(overall, actorRef)[0];
+		  upgrades = replaceSpellSymbols(upgrades);
+		  html.find('#difficulty').html(`<b>Difficulty:</b> ${upgrades}`);
+		}
     }
   }).render(true, { id: "EffectSelectionDialog", width: 800, resizable: false });
 }
