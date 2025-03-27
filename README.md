@@ -1,12 +1,9 @@
 # Lyinggod's Spell Selector for Genesys TTRPG
 
-<<<<<<< HEAD
-=======
 ${{\color{Darkred}\Large{\textsf{This\ module\ is\ still\ under\ development\ and\ may\ have\ errors\ \}}}}\$
 
 **The instructions are likely outpacing the releases**
 
->>>>>>> 8a724be4922b0190749c86e9afa7789579149827
 This module allows the "on the fly" creation of spells from the token in accordance with the Genesys magic rules, selecting applicable talents, and implements, and output all results to chat, including base strain.
 
 The spell selector is activated by SHIFT+RIGHT CLICK on the token. This will only be available to actors that have at least one rank 1 in a magic skill.
