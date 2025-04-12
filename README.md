@@ -115,15 +115,17 @@ The following switches are avaiable.
 Wounds and strain inflicted from talent can be shown in the chat message.  To have these values displayed per talent and in total add either of the following on their own line within the talents description on the actor:
 
 **Talent Switches**
-- **addSuccess: #** - # is the number of successes added to the roll time the rank mulitplier. This appears in chat as either "#[su]" (success}.
-- **extraSuccessOnHit: #** - # is the number of successes added to the total successes if roll is successful. This appears in chat as either "#[su]" (success}.
-- **wound: #** - # is the number of wounds inflicted times the rank multipler. This appear in chat for each applicable talent as "(w:#)" and in total wounds taken
-- **strain: #** - # is the number of strain inflicted times the rank multipler. This appear in chat for each applicable talent as "(s:#)" and in total train taken
+- **addSuccess: #** - # is the number of successes added to the roll time the rank mulitplier. This appears in chat as "#[su]" (success}.
+- **addAdvantage: #** - # is the number of advantages added to the roll time the rank mulitplier. This appears in chat as either "#[ad]" (advantage}.
+- **extraSuccessOnHit: #** - # is the number of successes added to the total successes if roll is successful. This appears in chat as "#[su]" (success}.
+- **wound: #** - # is the number of wounds inflicted times the rank multipler. This appear in chat for each applicable talent as "(w:#)" and in total wounds taken.
+- **strain: #** - # is the number of strain inflicted times the rank multipler. This appear in chat for each applicable talent as "(s:#)" and in total train taken.
 - **free: #** - # is a comma separated list of effects. Effect is automatically selected in the "Free" column or the dropdown is set to 1. This can be toggle off.
 - **force: #** - # is a comma separted list of effects that will alway be applied under the "Free" column and cannot be unchecked. The talent with this is automatically checked.
 - **never: #** - # is a comma separted list of effects that will never be allowed. The talent checkbox with this is automatically checked and cannot be unchecked. Checkboxes and dropdowns for this effect are disabled.
 - **difficulty: #** - This reduces the difficulty when the talent is selected. The note of the reduction is shown after the talent name in chat.
-- **note: #** - # is a string. This appears below the effects and meant to be a reminder to the caster of somthing regarding the talent
+- **chatNote: #** - Adds talent name and a note to the output. For noting additional effects, results, options, etc.
+- **note: #** - # is a string. This appears below the effects and meant to be a reminder to the caster of somthing regarding the talent.
 
 **Implement Switches**
 
