@@ -20,7 +20,7 @@ Add actions and effects via the _Configure Spell Selector_ button
 
 ### Save
 
-This is the most important button. Clicking _Save_ will store your entries. Closing the _Configure Spell Selector_ dialog will without saving will lose any changes.
+This is the most important button. Clicking _Save_ will store your entries. Closing the _Configure Spell Selector_ dialog without saving will lose any changes.
 
 **Add Magic Action:**
 
