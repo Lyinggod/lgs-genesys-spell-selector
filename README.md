@@ -115,6 +115,8 @@ The following switches are avaiable.
 Wounds and strain inflicted from talent can be shown in the chat message.  To have these values displayed per talent and in total add either of the following on their own line within the talents description on the actor:
 
 **Talent Switches**
+- **addSuccess: #** - # is the number of successes added to the roll time the rank mulitplier. This appears in chat as either "#[su]" (success}.
+- **extraSuccessOnHit: #** - # is the number of successes added to the total successes if roll is successful. This appears in chat as either "#[su]" (success}.
 - **wound: #** - # is the number of wounds inflicted times the rank multipler. This appear in chat for each applicable talent as "(w:#)" and in total wounds taken
 - **strain: #** - # is the number of strain inflicted times the rank multipler. This appear in chat for each applicable talent as "(s:#)" and in total train taken
 - **free: #** - # is a comma separated list of effects. Effect is automatically selected in the "Free" column or the dropdown is set to 1. This can be toggle off.
@@ -129,6 +131,7 @@ Implement switches are placed in the description of an item.
 
 - **implement** - Assigns the item to the spell selector.
 - **extraSuccessAfterHit: #** - May be positive or negative. Modifies the damage of a successful attack. Non-attack spells just show only bonus from implement (see spell block example)
+- **addSuccess: #** - Functions the same as with talents. Appears in chat as "Implement Name: +3[su]"
 
 <img src="https://github.com/Lyinggod/lgs-genesys-spell-selector/blob/main/docs/harsh_talent.jpg" width=300> <img src="https://github.com/Lyinggod/lgs-genesys-spell-selector/blob/main/docs/spell-block.jpg">
 
