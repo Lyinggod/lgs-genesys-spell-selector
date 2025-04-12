@@ -36,7 +36,7 @@ Skill names are a comma separated list and must be exactly the same as on the ch
 
 ### Description
 
-The description may have HTML but should not be wrapped in &lt;p&gt;&lt;/p&gt; other extra spacing will occur.
+The description may have HTML but should not be wrapped in &lt;p&gt;&lt;/p&gt; or other extra spacing will occur.
 
 Add a blank line between paragraphs to create a new paragraph in the _Spell Selector_. Additionally, normal FFG Star Wars system dice and symbol codes may be used in all descriptions, such as [di].
 
